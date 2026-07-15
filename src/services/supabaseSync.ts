@@ -239,7 +239,7 @@ export class SupabaseSync {
   static async pushTasks(tasks: any[]) {
     try {
       const rows = tasks.map(t => ({
-        id: t.id.startsWith('t_') && t.id.length < 30 ? undefined : t.id,
+        id: t.id,
         description: t.description,
         assigned_to_id: t.assignedToId,
         priority: t.priority,
@@ -259,7 +259,7 @@ export class SupabaseSync {
   static async pushMessages(messages: any[]) {
     try {
       const rows = messages.map(m => ({
-        id: m.id.startsWith('msg_') && m.id.length < 30 ? undefined : m.id,
+        id: m.id,
         sender_id: m.senderId === 'system' ? null : m.senderId,
         sender_name: m.senderName,
         sender_role: m.senderRole,
@@ -276,7 +276,7 @@ export class SupabaseSync {
   static async pushLogs(logs: any[]) {
     try {
       const rows = logs.map(l => ({
-        id: l.id.startsWith('log_') && l.id.length < 30 ? undefined : l.id,
+        id: l.id,
         user_name: l.userName,
         action: l.action,
         created_at: l.timestamp
