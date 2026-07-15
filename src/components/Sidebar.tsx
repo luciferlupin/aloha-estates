@@ -18,6 +18,8 @@ interface SidebarProps {
   setActiveView: (view: string) => void;
   onLogout: () => void;
   onUserUpdate: (user: User) => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -25,13 +27,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeView,
   setActiveView,
   onLogout,
-  onUserUpdate
+  onUserUpdate,
+  isMobileOpen = false,
+  onCloseMobile
 }) => {
   
   const handleCheckInToggle = () => {
     const updated = CRMStore.toggleCheckIn(currentUser.id);
     if (updated) {
       onUserUpdate(updated);
+    }
+  };
+
+  const handleNavSelect = (viewId: string) => {
+    setActiveView(viewId);
+    if (onCloseMobile) {
+      onCloseMobile();
     }
   };
 
@@ -45,14 +56,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div style={{
-      width: '280px',
+    <div className={`sidebar-wrapper ${isMobileOpen ? 'mobile-open' : ''}`} style={{
       backgroundColor: 'var(--bg-primary)',
       borderRight: '1px solid var(--border-color)',
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      flexShrink: 0
     }}>
       {/* Brand Header */}
       <div style={{
@@ -167,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => setActiveView(item.id)}
+              onClick={() => handleNavSelect(item.id)}
               style={{
                 width: '100%',
                 display: 'flex',

@@ -9,10 +9,12 @@ import { Team } from './components/Team';
 import { Chat } from './components/Chat';
 import { MetaCampaigns } from './components/MetaCampaigns';
 import { SupabaseSync } from './services/supabaseSync';
+import { Menu, X } from 'lucide-react';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState<string>('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Initialize standard database keys in localStorage
@@ -69,13 +71,37 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Mobile Header Bar */}
+      <header className="mobile-header">
+        <button 
+          className="menu-toggle-btn" 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          aria-label="Toggle Navigation Menu"
+        >
+          {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        <span className="mobile-brand-title">ALOHA ESTATES</span>
+        <div style={{ width: 36 }}></div>
+      </header>
+
+      {/* Slide-out Backdrop Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-mobile-overlay" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <Sidebar 
         currentUser={currentUser} 
         activeView={activeView} 
         setActiveView={setActiveView} 
         onLogout={handleLogout}
         onUserUpdate={handleUserUpdate}
+        isMobileOpen={isSidebarOpen}
+        onCloseMobile={() => setIsSidebarOpen(false)}
       />
+      
       <main className="main-content">
         {renderActiveView()}
       </main>
