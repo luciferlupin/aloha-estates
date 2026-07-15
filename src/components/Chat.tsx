@@ -19,6 +19,14 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     setMessages(CRMStore.getMessages());
   };
 
+  const getDMRecipientName = () => {
+    if (!activeChannel.startsWith('dm_')) return '';
+    const parts = activeChannel.split('_');
+    const otherId = parts[1] === currentUser.id ? parts[2] : parts[1];
+    const otherUser = team.find(u => u.id === otherId);
+    return otherUser ? otherUser.name : 'Private Chat';
+  };
+
   useEffect(() => {
     const handleSync = () => {
       loadMessages();
@@ -80,7 +88,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
         <div className="chat-container">
           <div className="chat-header">
             <span style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Users size={16} /> #{activeChannel}
+              <Users size={16} /> {activeChannel.startsWith('dm_') ? `Chat with ${getDMRecipientName()}` : `#${activeChannel}`}
             </span>
             <span className="badge badge-green" style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <span className="status-dot active"></span> Encrypted Channels
@@ -99,7 +107,11 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
                 gap: '0.5rem'
               }}>
                 <MessageSquare size={36} strokeWidth={1} />
-                <span style={{ fontSize: '0.85rem' }}>No messages in #{activeChannel} yet.</span>
+                <span style={{ fontSize: '0.85rem' }}>
+                  {activeChannel.startsWith('dm_') 
+                    ? `No direct messages with ${getDMRecipientName()} yet.` 
+                    : `No messages in #${activeChannel} yet.`}
+                </span>
               </div>
             ) : (
               filteredMessages.map((msg) => {
@@ -214,7 +226,8 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
               {team.filter(u => u.id !== currentUser.id).map(member => {
-                const dmChannelId = `dm_${member.id}`;
+                const sortedIds = [currentUser.id, member.id].sort();
+                const dmChannelId = `dm_${sortedIds[0]}_${sortedIds[1]}`;
                 const isActive = activeChannel === dmChannelId;
                 return (
                   <div 

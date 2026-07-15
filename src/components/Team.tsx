@@ -462,7 +462,9 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <button 
                         onClick={() => {
-                          sessionStorage.setItem('active_chat_channel', `dm_${selectedAgent.id}`);
+                          const sortedIds = [currentUser.id, selectedAgent.id].sort();
+                          const dmChannelId = `dm_${sortedIds[0]}_${sortedIds[1]}`;
+                          sessionStorage.setItem('active_chat_channel', dmChannelId);
                           onNavigate('chat');
                         }}
                         className="btn-primary"
