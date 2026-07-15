@@ -150,13 +150,13 @@ ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
 -- 7. DEFINE ACCESS CONTROL POLICIES (RLS)
-CREATE POLICY admin_all_users ON users FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_clients ON clients FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_comments ON client_comments FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_timeline ON client_timeline FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_tasks ON tasks FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_messages ON messages FOR ALL TO authenticated USING (true);
-CREATE POLICY admin_all_logs ON activity_logs FOR ALL TO authenticated USING (true);
+CREATE POLICY public_all_users ON users FOR ALL USING (true);
+CREATE POLICY public_all_clients ON clients FOR ALL USING (true);
+CREATE POLICY public_all_comments ON client_comments FOR ALL USING (true);
+CREATE POLICY public_all_timeline ON client_timeline FOR ALL USING (true);
+CREATE POLICY public_all_tasks ON tasks FOR ALL USING (true);
+CREATE POLICY public_all_messages ON messages FOR ALL USING (true);
+CREATE POLICY public_all_logs ON activity_logs FOR ALL USING (true);
 
 -- 8. ENABLE REALTIME SYNC FOR MOBILE/DESKTOP CROSS-DEVICE UPDATES (STEP 2)
 alter publication supabase_realtime add table users, clients, client_comments, client_timeline, tasks, messages, activity_logs;
