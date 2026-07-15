@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, ChatMessage, CRMStore } from '../services/store';
 import { MessageSquare, Send, ShieldAlert, Users, Sparkles } from 'lucide-react';
+import { supabase } from '../services/supabaseClient';
 
 interface ChatProps {
   currentUser: User;
@@ -15,10 +16,6 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
   const [team, setTeam] = useState<User[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const loadMessages = () => {
-    setMessages(CRMStore.getMessages());
-  };
-
   const getDMRecipientName = () => {
     if (!activeChannel.startsWith('dm_')) return '';
     const parts = activeChannel.split('_');
@@ -27,43 +24,117 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     return otherUser ? otherUser.name : 'Private Chat';
   };
 
-  useEffect(() => {
-    const handleSync = () => {
-      loadMessages();
-      setTeam(CRMStore.getUsers());
-    };
+  const fetchChatHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (data && !error) {
+        setMessages(data.map((m: any) => ({
+          id: m.id,
+          senderId: m.sender_id || 'system',
+          senderName: m.sender_name,
+          senderRole: m.sender_role,
+          text: m.text,
+          timestamp: m.created_at,
+          channel: m.channel
+        })));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch Chat history from Supabase:', e);
+    }
+  };
 
-    handleSync();
-    sessionStorage.removeItem('active_chat_channel');
-    
-    // Set interval to poll messages in localStorage (handles chat syncing if open in multiple tabs)
-    const interval = setInterval(handleSync, 1500);
-    
-    window.addEventListener('storage', handleSync);
+  useEffect(() => {
+    setTeam(CRMStore.getUsers());
+    fetchChatHistory();
+
+    // Clean up any existing channel with the same name first to prevent duplicates
+    try {
+      const activeChannelInst = supabase.channel('realtime-chat-room');
+      if (activeChannelInst) {
+        supabase.removeChannel(activeChannelInst);
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    const chatSubscription = supabase
+      .channel('realtime-chat-room')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload: any) => {
+        const dbMsg = payload.new;
+        const newMsg = {
+          id: dbMsg.id,
+          senderId: dbMsg.sender_id || 'system',
+          senderName: dbMsg.sender_name,
+          senderRole: dbMsg.sender_role,
+          text: dbMsg.text,
+          timestamp: dbMsg.created_at,
+          channel: dbMsg.channel
+        };
+
+        setMessages(prev => {
+          if (prev.some(m => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+      })
+      .subscribe();
+
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('storage', handleSync);
+      supabase.removeChannel(chatSubscription);
     };
-  }, []);
+  }, [activeChannel]);
 
   const filteredMessages = messages.filter(
     m => m.channel === activeChannel
   );
 
   useEffect(() => {
-    // Auto scroll to bottom on new messages
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [filteredMessages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
     const text = inputText;
     setInputText('');
 
-    CRMStore.sendMessage(currentUser.id, text, activeChannel);
-    loadMessages();
+    const tempId = 'msg_' + Math.random().toString(36).substr(2, 9);
+    const newMsg: ChatMessage = {
+      id: tempId,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      senderRole: currentUser.role,
+      text,
+      timestamp: new Date().toISOString(),
+      channel: activeChannel
+    };
+
+    // Optimistically update UI
+    setMessages(prev => [...prev, newMsg]);
+
+    try {
+      // Save directly to Supabase messages table
+      const { error } = await supabase.from('messages').insert({
+        id: tempId,
+        sender_id: currentUser.id,
+        sender_name: currentUser.name,
+        sender_role: currentUser.role,
+        text,
+        channel: activeChannel
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (err) {
+      console.error('Failed to send real-time message:', err);
+      // Rollback on failure
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setInputText(text);
+    }
   };
 
   return (
