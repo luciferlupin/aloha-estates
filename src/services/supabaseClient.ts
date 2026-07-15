@@ -1,0 +1,16 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Fallback logic so Vite doesn't crash during local development before keys are set
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn(
+    'Supabase Configuration Alert: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables are missing. Please configure them in your .env file.'
+  );
+}
+
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder-url.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key'
+);
