@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 :root {
   --bg-primary: #ffffff;
@@ -16,8 +16,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.08);
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   
@@ -794,3 +794,66 @@ h1, h2, h3, h4, h5, h6 {
 .pulse-halo {
   animation: pulseHalo 1.5s infinite ease-out;
 }
+
+/* Delete Message Action Styles */
+.delete-message-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+  border-radius: 4px;
+}
+
+.delete-message-btn:hover {
+  opacity: 1;
+  color: var(--accent-orange, #d97706);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.message-bubble.outgoing .delete-message-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Interactive Dashboard Classes */
+.interactive-card {
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast) !important;
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--accent-black) !important;
+}
+
+.interactive-row-item {
+  transition: background-color var(--transition-fast);
+}
+
+.interactive-row-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.interactive-row {
+  transition: background-color var(--transition-fast);
+}
+
+.interactive-row:hover {
+  background-color: var(--bg-secondary);
+}
+
+.hover-underline {
+  transition: color var(--transition-fast);
+}
+
+.hover-underline:hover {
+  text-decoration: underline;
+}
+
+

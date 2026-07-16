@@ -521,7 +521,7 @@ export class CRMStore {
     SupabaseSync.pushClients(clients);
   }
 
-  static addClient(client: Omit<Client, 'id' | 'createdAt'>): Client {
+  static addClient(client: Omit<Client, 'id' | 'createdAt'>, actorName?: string): Client {
     const clients = this.getClients();
     const newClient: Client = {
       ...client,
@@ -540,11 +540,11 @@ export class CRMStore {
     };
     clients.unshift(newClient);
     this.saveClients(clients);
-    this.addLog('CRM System', `New client profile created: ${newClient.name}`);
+    this.addLog(actorName || 'CRM System', `New client profile created: ${newClient.name}`);
     return newClient;
   }
 
-  static updateClient(clientId: string, updates: Partial<Client>): Client | null {
+  static updateClient(clientId: string, updates: Partial<Client>, actorName?: string): Client | null {
     const clients = this.getClients();
     const idx = clients.findIndex(c => c.id === clientId);
     if (idx === -1) return null;
@@ -593,11 +593,11 @@ export class CRMStore {
       this.saveClients(clients);
     }
 
-    this.addLog('CRM System', `Updated details for client ${oldName}`);
+    this.addLog(actorName || 'CRM System', `Updated details for client ${oldName}`);
     return updatedClient;
   }
 
-  static updateClientStatus(clientId: string, status: Client['status']): Client | null {
+  static updateClientStatus(clientId: string, status: Client['status'], actorName?: string): Client | null {
     const clients = this.getClients();
     const clientIndex = clients.findIndex(c => c.id === clientId);
     if (clientIndex === -1) return null;
@@ -619,7 +619,7 @@ export class CRMStore {
     client.timeline.unshift(newEvent);
 
     this.saveClients(clients);
-    this.addLog('CRM System', `Updated client ${client.name} status to ${status.toUpperCase()}`);
+    this.addLog(actorName || 'CRM System', `Updated client ${client.name} status to ${status.toUpperCase()}`);
 
     if (status === 'closed' && oldStatus !== 'closed') {
       this.sendMessage(
@@ -631,7 +631,7 @@ export class CRMStore {
     return client;
   }
 
-  static setClientReminder(clientId: string, date: string | null, text: string | null): Client | null {
+  static setClientReminder(clientId: string, date: string | null, text: string | null, actorName?: string): Client | null {
     const clients = this.getClients();
     const clientIndex = clients.findIndex(c => c.id === clientId);
     if (clientIndex === -1) return null;
@@ -650,7 +650,7 @@ export class CRMStore {
         userName: client.assignedAgentName || 'CRM System'
       };
       client.timeline.unshift(newEvent);
-      this.addLog('CRM System', `Reminder set for client ${client.name} on ${new Date(date).toLocaleDateString()}`);
+      this.addLog(actorName || 'CRM System', `Reminder set for client ${client.name} on ${new Date(date).toLocaleDateString()}`);
     } else {
       const newEvent = {
         id: 'ev_' + Math.random().toString(36).substr(2, 9),
@@ -690,17 +690,18 @@ export class CRMStore {
     client.timeline.unshift(newEvent);
 
     this.saveClients(clients);
+    this.addLog(author, `Added viewing notes comment on client ${client.name} dossier: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
     return client;
   }
 
-  static deleteClient(clientId: string): boolean {
+  static deleteClient(clientId: string, actorName?: string): boolean {
     let clients = this.getClients();
     const client = clients.find(c => c.id === clientId);
     if (!client) return false;
     
     clients = clients.filter(c => c.id !== clientId);
     this.saveClients(clients);
-    this.addLog('CRM System', `Deleted client record: ${client.name}`);
+    this.addLog(actorName || 'CRM System', `Deleted client record: ${client.name}`);
     return true;
   }
 
@@ -720,7 +721,8 @@ export class CRMStore {
     priority: Task['priority'], 
     dueDate: string,
     clientId?: string,
-    category?: Task['category']
+    category?: Task['category'],
+    actorName?: string
   ): Task {
     const tasks = this.getTasks();
     const users = this.getUsers();
@@ -764,11 +766,11 @@ export class CRMStore {
 
     tasks.unshift(newTask);
     this.saveTasks(tasks);
-    this.addLog('Superadmin', `Assigned task "${description}" to ${newTask.assignedToName}`);
+    this.addLog(actorName || 'Superadmin', `Assigned task "${description}" to ${newTask.assignedToName}`);
     return newTask;
   }
 
-  static toggleTaskCompleted(taskId: string): Task | null {
+  static toggleTaskCompleted(taskId: string, actorName?: string): Task | null {
     const tasks = this.getTasks();
     const idx = tasks.findIndex(t => t.id === taskId);
     if (idx === -1) return null;
@@ -795,11 +797,11 @@ export class CRMStore {
     }
 
     this.saveTasks(tasks);
-    this.addLog('CRM System', `Task "${task.description}" marked as ${task.completed ? 'COMPLETED' : 'INCOMPLETE'}`);
+    this.addLog(actorName || 'CRM System', `Task "${task.description}" marked as ${task.completed ? 'COMPLETED' : 'INCOMPLETE'}`);
     return task;
   }
 
-  static updateTaskStatus(taskId: string, status: Task['status'], feedback?: string): Task | null {
+  static updateTaskStatus(taskId: string, status: Task['status'], feedback?: string, actorName?: string): Task | null {
     const tasks = this.getTasks();
     const idx = tasks.findIndex(t => t.id === taskId);
     if (idx === -1) return null;
@@ -834,7 +836,7 @@ export class CRMStore {
     }
 
     this.saveTasks(tasks);
-    this.addLog('CRM System', `Updated task "${task.description}" status to ${status!.toUpperCase()}`);
+    this.addLog(actorName || 'CRM System', `Updated task "${task.description}" status to ${status!.toUpperCase()}`);
     return task;
   }
 

@@ -9,12 +9,17 @@ import {
   Clock, 
   ArrowUpRight,
   PlusCircle,
-  Eye
+  Eye,
+  X,
+  Search,
+  Sparkles,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 interface DashboardProps {
   currentUser: User;
-  onNavigate: (view: string) => void;
+  onNavigate: (view: string, context?: any) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate }) => {
@@ -28,6 +33,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
   // Interactive premium Apple-style chart states
   const [chartMetric, setChartMetric] = useState<'sales' | 'leads'>('sales');
   const [hoveredPointIdx, setHoveredPointIdx] = useState<number | null>(null);
+
+  // Drill-down details views
+
+  const handleClearReminder = (clientId: string) => {
+    CRMStore.setClientReminder(clientId, null, null, currentUser.name);
+    // Reload state
+    setClients(CRMStore.getClients());
+  };
+
+  const handleSnoozeReminder = (clientId: string, currentRemDate: string) => {
+    const newDate = new Date(currentRemDate);
+    newDate.setDate(newDate.getDate() + 1);
+    const client = CRMStore.getClients().find(c => c.id === clientId);
+    CRMStore.setClientReminder(clientId, newDate.toISOString(), client?.reminderText || '', currentUser.name);
+    // Reload state
+    setClients(CRMStore.getClients());
+  };
+
+  const handleToggleAgentCheckIn = (agentId: string) => {
+    CRMStore.toggleCheckIn(agentId);
+    // Reload state
+    setTeam(CRMStore.getUsers());
+    setLogs(CRMStore.getLogs().slice(0, 5));
+  };
 
   useEffect(() => {
     const loadDashboardData = () => {
@@ -216,6 +245,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
         </div>
         
         <div style={{ display: 'flex', gap: '0.75rem' }}>
+          {currentUser.role === 'superadmin' && (
+            <>
+              <button onClick={() => onNavigate('analytics')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--accent-black)', color: 'var(--accent-black)' }}>
+                <BarChart3 size={16} /> Company Analytics
+              </button>
+              <button onClick={() => onNavigate('activity')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--accent-black)', color: 'var(--accent-black)' }}>
+                <Activity size={16} /> Operations Portal
+              </button>
+            </>
+          )}
           <button onClick={() => onNavigate('clients')} className="btn-secondary">
             <Plus size={16} /> New Client
           </button>
@@ -230,7 +269,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
       {/* KPI Cards Grid */}
       <div className="grid-4">
         
-        <div className="premium-card">
+        <div 
+          className="premium-card interactive-card" 
+          onClick={() => onNavigate('dashboard-drilldown', { type: 'sales' })}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Sales Volume (YTD)
@@ -246,7 +288,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Overall company transactions closed</span>
         </div>
 
-        <div className="premium-card">
+        <div 
+          className="premium-card interactive-card" 
+          onClick={() => onNavigate('dashboard-drilldown', { type: 'pipeline' })}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Client Pipeline
@@ -262,7 +307,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total leads and active buyers</span>
         </div>
 
-        <div className="premium-card">
+        <div 
+          className="premium-card interactive-card" 
+          onClick={() => onNavigate('dashboard-drilldown', { type: 'meta' })}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Meta Leads Status
@@ -280,7 +328,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Real-time syncing Facebook campaigns</span>
         </div>
 
-        <div className="premium-card">
+        <div 
+          className="premium-card interactive-card" 
+          onClick={() => onNavigate('dashboard-drilldown', { type: 'agents' })}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Active Agents
@@ -633,8 +684,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                       <Clock size={14} />
                     </div>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                        {client.name} — <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{client.propertyInterest}</span>
+                      <div style={{ fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600 }}>{client.name} — <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{client.propertyInterest}</span></span>
+                        <div style={{ display: 'flex', gap: '0.3rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleSnoozeReminder(client.id, client.reminderDate!)}
+                            style={{
+                              fontSize: '0.65rem',
+                              padding: '0.15rem 0.35rem',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '4px',
+                              backgroundColor: 'var(--bg-primary)',
+                              cursor: 'pointer',
+                              color: 'var(--text-primary)'
+                            }}
+                          >
+                            Snooze
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleClearReminder(client.id)}
+                            style={{
+                              fontSize: '0.65rem',
+                              padding: '0.15rem 0.35rem',
+                              border: '1px solid var(--border-color)',
+                              borderRadius: '4px',
+                              backgroundColor: 'var(--bg-primary)',
+                              cursor: 'pointer',
+                              color: 'var(--accent-orange, #d97706)'
+                            }}
+                          >
+                            Dismiss
+                          </button>
+                        </div>
                       </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>
                         "{client.reminderText}"
@@ -663,7 +746,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {team.map(member => (
                 <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div 
+                    onClick={() => onNavigate('agent-detail', { agentId: member.id, fromView: 'dashboard' })}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+                    title="View Agent profile"
+                  >
                     <div style={{
                       width: '32px',
                       height: '32px',
@@ -678,13 +765,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                       {member.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{member.name}</div>
+                      <div className="hover-underline" style={{ fontSize: '0.85rem', fontWeight: 600 }}>{member.name}</div>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
                         {member.role === 'superadmin' ? 'Founder' : 'Real Estate Agent'}
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}>
+                  <div 
+                    onClick={() => {
+                      if (currentUser.role === 'superadmin' || currentUser.id === member.id) {
+                        handleToggleAgentCheckIn(member.id);
+                      }
+                    }}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.4rem', 
+                      fontSize: '0.75rem',
+                      cursor: (currentUser.role === 'superadmin' || currentUser.id === member.id) ? 'pointer' : 'default',
+                      userSelect: 'none',
+                      backgroundColor: 'var(--bg-secondary)',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-color)'
+                    }}
+                    title={currentUser.role === 'superadmin' || currentUser.id === member.id ? "Click to toggle check-in status" : ""}
+                  >
                     <span className={`status-dot ${member.checkedIn ? 'active' : 'inactive'}`}></span>
                     <span style={{ color: member.checkedIn ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                       {member.checkedIn ? 'Active' : 'Offline'}
@@ -750,7 +856,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
                   {Object.entries(stageValues).map(([stage, value]) => (
-                    <div key={stage} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div 
+                      key={stage} 
+                      onClick={() => onNavigate('dashboard-drilldown', { type: 'funnel', meta: { stage } })}
+                      className="interactive-row-item"
+                      style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', cursor: 'pointer', padding: '0.35rem 0.5rem', borderRadius: '6px', margin: '0 -0.5rem' }}
+                      title={`Click to view clients in ${stage}`}
+                    >
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                         <span style={{ textTransform: 'uppercase', fontWeight: 600, color: 'var(--text-secondary)' }}>{stage}</span>
                         <span style={{ fontWeight: 700 }}>₹{value} Cr</span>
@@ -779,10 +891,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                     const total = clients.length || 1;
                     const percent = Math.round((count / total) * 100);
                     return (
-                      <div key={source} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                      <div 
+                        key={source} 
+                        onClick={() => onNavigate('dashboard-drilldown', { type: 'source', meta: { source } })}
+                        className="interactive-row-item"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', cursor: 'pointer', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0 -0.5rem' }}
+                        title={`Click to view clients from ${source}`}
+                      >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-black)' }}></span>
-                          <span>{source}</span>
+                          <span className="hover-underline">{source}</span>
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem', fontWeight: 600 }}>
                           <span style={{ color: 'var(--text-secondary)' }}>{count} leads</span>
@@ -815,11 +933,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                   </thead>
                   <tbody>
                     {agentPerformance.map(agent => (
-                      <tr key={agent.id} style={{ borderBottom: '1px solid var(--bg-tertiary)' }}>
+                      <tr 
+                        key={agent.id} 
+                        onClick={() => onNavigate('agent-detail', { agentId: agent.id, fromView: 'dashboard' })}
+                        style={{ borderBottom: '1px solid var(--bg-tertiary)', cursor: 'pointer' }}
+                        className="interactive-row"
+                        title="Click to view detailed agent performance"
+                      >
                         <td style={{ padding: '0.75rem 0.25rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                             <span className={`status-dot ${agent.checkedIn ? 'active' : 'inactive'}`} style={{ width: '6px', height: '6px' }}></span>
-                            <span style={{ fontWeight: 600 }}>{agent.name}</span>
+                            <span className="hover-underline" style={{ fontWeight: 600 }}>{agent.name}</span>
                           </div>
                         </td>
                         <td style={{ padding: '0.75rem 0.25rem', textAlign: 'center' }}>{agent.totalClients}</td>

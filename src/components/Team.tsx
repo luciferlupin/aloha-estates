@@ -19,7 +19,7 @@ import {
 
 interface TeamProps {
   currentUser: User;
-  onNavigate: (view: string) => void;
+  onNavigate: (view: string, context?: any) => void;
 }
 
 export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
@@ -29,8 +29,6 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   
   // Monitoring states
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-  const [showMonitorModal, setShowMonitorModal] = useState(false);
   
   // New member form states
   const [name, setName] = useState('');
@@ -87,10 +85,6 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
       const success = CRMStore.deleteTeamMember(memberId);
       if (success) {
         loadData();
-        if (selectedAgentId === memberId) {
-          setShowMonitorModal(false);
-          setSelectedAgentId(null);
-        }
       }
     }
   };
@@ -257,8 +251,7 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
                     border: '1px solid var(--border-color)',
                     cursor: 'pointer'
                   }} onClick={() => {
-                    setSelectedAgentId(member.id);
-                    setShowMonitorModal(true);
+                    onNavigate('agent-detail', { agentId: member.id, fromView: 'team' });
                   }}>
                     {/* Top Row: User details */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -392,174 +385,7 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
 
       </div>
 
-      {/* Modal: Agent Monitoring Dashboard (Superadmin Only) */}
-      {showMonitorModal && selectedAgentId && (
-        (() => {
-          const selectedAgent = members.find(m => m.id === selectedAgentId);
-          if (!selectedAgent) return null;
-          
-          const metrics = getMemberMetrics(selectedAgent.id);
-          const agentTasks = tasks.filter(t => t.assignedToId === selectedAgent.id);
-          const agentLogs = logs.filter(l => l.userName === selectedAgent.name);
-          
-          // Calculate mock efficiency score based on closed deals & tasks completed
-          const tasksRatio = metrics.tasksCount > 0 ? (metrics.tasksCompleted / metrics.tasksCount) : 1;
-          const score = selectedAgent.role === 'superadmin' ? 10 : Number((7 + (tasksRatio * 2) + (metrics.closedCount > 0 ? 1 : 0)).toFixed(1));
 
-          return (
-            <div style={{
-              position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-              backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-            }}>
-              <div className="premium-card fade-in" style={{ maxWidth: '800px', width: '95%', padding: '2rem', gap: '1.5rem', backgroundColor: 'white', maxHeight: '90vh', overflowY: 'auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-                  <div>
-                    <span className="badge badge-black" style={{ textTransform: 'uppercase', fontSize: '0.65rem', marginBottom: '0.25rem' }}>
-                      Agent Monitoring Console
-                    </span>
-                    <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600 }}>
-                      {selectedAgent.name}
-                    </h3>
-                  </div>
-                  <button onClick={() => setShowMonitorModal(false)} className="btn-icon"><X size={18} /></button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '2rem' }}>
-                  {/* Left Column: Dossier & Actions */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderRight: '1px solid var(--border-color)', paddingRight: '1.5rem' }}>
-                    <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>KPI Statistics</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Shift Status:</span>
-                        <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <span className={`status-dot ${selectedAgent.checkedIn ? 'active' : 'inactive'}`}></span>
-                          {selectedAgent.checkedIn ? 'Active Now' : 'Offline'}
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Conversion Score:</span>
-                        <span style={{ fontWeight: 700, color: 'var(--accent-green)' }}>{score} / 10</span>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Clients Pipeline:</span>
-                        <span style={{ fontWeight: 600 }}>{metrics.clientsCount} assigned</span>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Closed Revenue Volume:</span>
-                        <span style={{ fontWeight: 700 }}>{metrics.salesVolume}</span>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-tertiary)', paddingBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Tasks Completed:</span>
-                        <span style={{ fontWeight: 600 }}>{metrics.tasksCompleted} / {metrics.tasksCount}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <button 
-                        onClick={() => {
-                          const sortedIds = [currentUser.id, selectedAgent.id].sort();
-                          const dmChannelId = `dm_${sortedIds[0]}_${sortedIds[1]}`;
-                          sessionStorage.setItem('active_chat_channel', dmChannelId);
-                          onNavigate('chat');
-                        }}
-                        className="btn-primary"
-                        style={{ width: '100%', gap: '0.5rem' }}
-                      >
-                        <MessageSquare size={16} /> Open Direct Chat (DM)
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setShowMonitorModal(false);
-                          onNavigate('tasks');
-                        }}
-                        className="btn-secondary"
-                        style={{ width: '100%', gap: '0.5rem' }}
-                      >
-                        <PlusCircle size={16} /> Assign Agent Task
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Live activity timeline & tasks checklist */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    
-                    {/* Live Task Board */}
-                    <div>
-                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Assigned Task Checklist</h4>
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                        maxHeight: '180px',
-                        overflowY: 'auto',
-                        backgroundColor: 'var(--bg-secondary)',
-                        padding: '0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)'
-                      }}>
-                        {agentTasks.length === 0 ? (
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: '1rem' }}>
-                            No operations tasks currently assigned.
-                          </div>
-                        ) : (
-                          agentTasks.map(t => (
-                            <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.4rem' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                                <span style={{ fontWeight: 600, textDecoration: t.completed ? 'line-through' : 'none' }}>{t.description}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Due: {new Date(t.dueDate).toLocaleDateString()}</span>
-                              </div>
-                              <span className={`badge ${
-                                t.status === 'approved' ? 'badge-green' :
-                                t.status === 'completed' ? 'badge-black' :
-                                t.status === 'in_progress' ? 'badge-orange' : 'badge-gray'
-                              }`} style={{ textTransform: 'uppercase', fontSize: '0.6rem' }}>
-                                {t.status}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Agent Activity Log */}
-                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                      <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Agent Activity timeline</h4>
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                        maxHeight: '180px',
-                        overflowY: 'auto'
-                      }}>
-                        {agentLogs.length === 0 ? (
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic', padding: '0.5rem 0' }}>
-                            No logs registered for this shift.
-                          </div>
-                        ) : (
-                          agentLogs.map(l => (
-                            <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', borderLeft: '2px solid var(--accent-black)', paddingLeft: '0.5rem' }}>
-                              <span>{l.action}</span>
-                              <span style={{ color: 'var(--text-secondary)' }}>
-                                {new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()
-      )}
 
     </div>
   );

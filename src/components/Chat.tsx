@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { User, ChatMessage, CRMStore } from '../services/store';
-import { MessageSquare, Send, ShieldAlert, Users, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, ShieldAlert, Users, Sparkles, Trash2, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 
 interface ChatProps {
@@ -14,6 +14,15 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     return sessionStorage.getItem('active_chat_channel') || 'aloha-hq';
   });
   const [team, setTeam] = useState<User[]>([]);
+  const [deletedForMeIds, setDeletedForMeIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(`aloha_deleted_for_me_${currentUser.id}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [selectedMessageForDelete, setSelectedMessageForDelete] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const getDMRecipientName = () => {
@@ -46,6 +55,30 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     }
   };
 
+  const handleDeleteForMe = (messageId: string) => {
+    const updated = [...deletedForMeIds, messageId];
+    setDeletedForMeIds(updated);
+    localStorage.setItem(`aloha_deleted_for_me_${currentUser.id}`, JSON.stringify(updated));
+    CRMStore.addLog(currentUser.name, `Deleted a chat message for self`);
+  };
+
+  const handleDeleteForEveryone = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+      
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+      CRMStore.addLog(currentUser.name, `Deleted a chat message for everyone`);
+    } catch (err) {
+      console.error('Failed to delete message for everyone:', err);
+      alert('Failed to delete message for everyone. Please try again.');
+    }
+  };
+
   useEffect(() => {
     setTeam(CRMStore.getUsers());
     fetchChatHistory();
@@ -62,22 +95,27 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
 
     const chatSubscription = supabase
       .channel('realtime-chat-room')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload: any) => {
-        const dbMsg = payload.new;
-        const newMsg = {
-          id: dbMsg.id,
-          senderId: dbMsg.sender_id || 'system',
-          senderName: dbMsg.sender_name,
-          senderRole: dbMsg.sender_role,
-          text: dbMsg.text,
-          timestamp: dbMsg.created_at,
-          channel: dbMsg.channel
-        };
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload: any) => {
+        if (payload.eventType === 'INSERT') {
+          const dbMsg = payload.new;
+          const newMsg = {
+            id: dbMsg.id,
+            senderId: dbMsg.sender_id || 'system',
+            senderName: dbMsg.sender_name,
+            senderRole: dbMsg.sender_role,
+            text: dbMsg.text,
+            timestamp: dbMsg.created_at,
+            channel: dbMsg.channel
+          };
 
-        setMessages(prev => {
-          if (prev.some(m => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
-        });
+          setMessages(prev => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        } else if (payload.eventType === 'DELETE') {
+          const deletedId = payload.old.id;
+          setMessages(prev => prev.filter(m => m.id !== deletedId));
+        }
       })
       .subscribe();
 
@@ -87,7 +125,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
   }, [activeChannel]);
 
   const filteredMessages = messages.filter(
-    m => m.channel === activeChannel
+    m => m.channel === activeChannel && !deletedForMeIds.includes(m.id)
   );
 
   useEffect(() => {
@@ -129,6 +167,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
       if (error) {
         throw error;
       }
+      CRMStore.addLog(currentUser.name, `Sent chat message in #${activeChannel}: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
     } catch (err) {
       console.error('Failed to send real-time message:', err);
       // Rollback on failure
@@ -207,9 +246,83 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
                         {msg.senderRole === 'superadmin' ? 'Founder' : 'Agent'}
                       </span>
                     </div>
+                  {selectedMessageForDelete?.id === msg.id ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', padding: '0.25rem 0', minWidth: '180px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.9 }}>Delete Message?</span>
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <button 
+                          type="button" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleDeleteForMe(msg.id); 
+                            setSelectedMessageForDelete(null); 
+                          }}
+                          className="btn-secondary"
+                          style={{ 
+                            padding: '0.15rem 0.4rem', 
+                            fontSize: '0.7rem', 
+                            backgroundColor: isMyMessage ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)',
+                            borderColor: isMyMessage ? 'rgba(255,255,255,0.4)' : 'var(--border-color)',
+                            color: isMyMessage ? 'white' : 'inherit'
+                          }}
+                        >
+                          For Me
+                        </button>
+                        {(msg.senderId === currentUser.id || currentUser.role === 'superadmin') && (
+                          <button 
+                            type="button" 
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              handleDeleteForEveryone(msg.id); 
+                              setSelectedMessageForDelete(null); 
+                            }}
+                            className="btn-primary"
+                            style={{ 
+                              padding: '0.15rem 0.4rem', 
+                              fontSize: '0.7rem', 
+                              backgroundColor: isMyMessage ? '#fff' : 'var(--accent-black)',
+                              color: isMyMessage ? 'var(--accent-black)' : '#fff',
+                              borderColor: isMyMessage ? '#fff' : 'var(--accent-black)'
+                            }}
+                          >
+                            For Everyone
+                          </button>
+                        )}
+                        <button 
+                          type="button" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedMessageForDelete(null); 
+                          }}
+                          className="btn-secondary"
+                          style={{ 
+                            padding: '0.15rem 0.4rem', 
+                            fontSize: '0.7rem',
+                            border: 'none',
+                            background: 'none',
+                            color: isMyMessage ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <div>{msg.text}</div>
-                    <div className="message-timestamp">
-                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  )}
+                    <div className="message-timestamp" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedMessageForDelete(msg);
+                        }} 
+                        className="delete-message-btn"
+                        title="Delete message"
+                      >
+                        <Trash2 size={11} />
+                      </button>
                     </div>
                   </div>
                 );
@@ -359,6 +472,8 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
         </div>
 
       </div>
+
+
 
     </div>
   );

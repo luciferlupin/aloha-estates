@@ -11,9 +11,18 @@ import { MetaCampaigns } from './components/MetaCampaigns';
 import { SupabaseSync } from './services/supabaseSync';
 import { Menu, X } from 'lucide-react';
 
+// Import full-page workspaces replacing modals
+import { AddClientPage } from './components/AddClientPage';
+import { ClientDetailsPage } from './components/ClientDetailsPage';
+import { AgentDetailPage } from './components/AgentDetailPage';
+import { DashboardDrillDown } from './components/DashboardDrillDown';
+import { CompanyActivity } from './components/CompanyActivity';
+import { CompanyAnalytics } from './components/CompanyAnalytics';
+
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState<string>('dashboard');
+  const [viewContext, setViewContext] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -29,6 +38,7 @@ function App() {
     // Trigger initial Supabase sync-down and register real-time broadcast channel
     SupabaseSync.syncDown();
     SupabaseSync.subscribeRealtime();
+    SupabaseSync.optimizeStorage();
   }, []);
 
   const handleLoginSuccess = (user: User) => {
@@ -46,6 +56,11 @@ function App() {
     sessionStorage.setItem('aloha_current_user', JSON.stringify(updatedUser));
   };
 
+  const handleNavigate = (view: string, context: any = null) => {
+    setActiveView(view);
+    setViewContext(context);
+  };
+
   if (!currentUser) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
@@ -53,19 +68,52 @@ function App() {
   const renderActiveView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard currentUser={currentUser} onNavigate={setActiveView} />;
+        return <Dashboard currentUser={currentUser} onNavigate={handleNavigate} />;
       case 'clients':
-        return <Clients currentUser={currentUser} />;
+        return <Clients currentUser={currentUser} onNavigate={handleNavigate} />;
       case 'tasks':
-        return <Tasks currentUser={currentUser} />;
+        return <Tasks currentUser={currentUser} onNavigate={handleNavigate} />;
       case 'team':
-        return <Team currentUser={currentUser} onNavigate={setActiveView} />;
+        return <Team currentUser={currentUser} onNavigate={handleNavigate} />;
       case 'chat':
         return <Chat currentUser={currentUser} />;
       case 'meta':
         return <MetaCampaigns />;
+      
+      // New Dedicated Full Page Views
+      case 'add-client':
+        return <AddClientPage onBack={() => setActiveView('clients')} />;
+      case 'client-details':
+        return (
+          <ClientDetailsPage 
+            clientId={viewContext?.clientId} 
+            onBack={() => setActiveView('clients')} 
+            currentUser={currentUser} 
+          />
+        );
+      case 'agent-detail':
+        return (
+          <AgentDetailPage 
+            agentId={viewContext?.agentId} 
+            onBack={() => setActiveView(viewContext?.fromView || 'dashboard')} 
+            currentUser={currentUser} 
+          />
+        );
+      case 'dashboard-drilldown':
+        return (
+          <DashboardDrillDown 
+            type={viewContext?.type} 
+            meta={viewContext?.meta} 
+            onBack={() => setActiveView('dashboard')} 
+            currentUser={currentUser} 
+          />
+        );
+      case 'activity':
+        return <CompanyActivity currentUser={currentUser} onNavigate={handleNavigate} />;
+      case 'analytics':
+        return <CompanyAnalytics currentUser={currentUser} onNavigate={handleNavigate} />;
       default:
-        return <Dashboard currentUser={currentUser} onNavigate={setActiveView} />;
+        return <Dashboard currentUser={currentUser} onNavigate={handleNavigate} />;
     }
   };
 

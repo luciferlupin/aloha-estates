@@ -9,7 +9,9 @@ import {
   Megaphone,
   LogOut,
   Clock,
-  UserCheck
+  UserCheck,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -54,6 +56,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'chat', label: 'General Chat', icon: MessageSquare },
     { id: 'meta', label: 'Meta Ads', icon: Megaphone }
   ];
+
+  if (currentUser.role === 'superadmin') {
+    navItems.push({ id: 'analytics', label: 'Company Analytics', icon: BarChart3 });
+    navItems.push({ id: 'activity', label: 'Company Activity', icon: Activity });
+  }
 
   return (
     <div className={`sidebar-wrapper ${isMobileOpen ? 'mobile-open' : ''}`} style={{

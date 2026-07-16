@@ -286,4 +286,42 @@ export class SupabaseSync {
       console.warn('Supabase push activity logs failed:', e);
     }
   }
+
+  // Database storage auto-pruning to keep footprint low on Supabase
+  static async optimizeStorage() {
+    try {
+      const now = new Date();
+
+      // 1. Keep activity logs for 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+      const { error: logErr } = await supabase
+        .from('activity_logs')
+        .delete()
+        .lt('created_at', thirtyDaysAgo.toISOString());
+      if (logErr) throw logErr;
+
+      // 2. Keep client timeline entries for 60 days
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(now.getDate() - 60);
+      const { error: timelineErr } = await supabase
+        .from('client_timeline')
+        .delete()
+        .lt('created_at', sixtyDaysAgo.toISOString());
+      if (timelineErr) throw timelineErr;
+
+      // 3. Keep chat messages for 90 days
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(now.getDate() - 90);
+      const { error: msgErr } = await supabase
+        .from('messages')
+        .delete()
+        .lt('created_at', ninetyDaysAgo.toISOString());
+      if (msgErr) throw msgErr;
+
+      console.log('Supabase storage optimization completed successfully.');
+    } catch (err) {
+      console.warn('Supabase storage optimization failed:', err);
+    }
+  }
 }
