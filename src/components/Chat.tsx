@@ -24,6 +24,8 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
   });
   const [selectedMessageForDelete, setSelectedMessageForDelete] = useState<ChatMessage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isUserNearBottom = useRef(true);
 
   const getDMRecipientName = () => {
     if (!activeChannel.startsWith('dm_')) return '';
@@ -128,8 +130,32 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
     m => m.channel === activeChannel && !deletedForMeIds.includes(m.id)
   );
 
+  const scrollToBottom = (smooth: boolean = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
+    }
+  };
+
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const threshold = 100; // pixels from bottom
+      isUserNearBottom.current = scrollHeight - scrollTop - clientHeight < threshold;
+    }
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isUserNearBottom.current) {
+      scrollToBottom(true);
+    }
   }, [filteredMessages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -205,7 +231,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
             </span>
           </div>
 
-          <div className="chat-messages">
+          <div className="chat-messages" ref={messagesContainerRef}>
             {filteredMessages.length === 0 ? (
               <div style={{
                 display: 'flex',
