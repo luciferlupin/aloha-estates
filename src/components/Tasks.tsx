@@ -194,7 +194,9 @@ export const Tasks: React.FC<TasksProps> = ({ currentUser, onNavigate }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: '1px solid var(--border-color)',
-        paddingBottom: '1.5rem'
+        paddingBottom: '1.5rem',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
         <div>
           <h1 className="luxury-title" style={{ fontSize: '2.25rem', fontWeight: 600, color: 'var(--accent-black)' }}>
@@ -207,7 +209,7 @@ export const Tasks: React.FC<TasksProps> = ({ currentUser, onNavigate }) => {
       </div>
 
       {/* Task Center Analytics Summary Cards */}
-      <div className="grid-4">
+      <div className="grid-4" style={{ gap: '1rem' }}>
         
         {/* Card 1: My Pending Tasks */}
         <div className="premium-card" style={{ padding: '1.25rem', border: '1px solid var(--border-color)', backgroundColor: 'white' }}>
@@ -268,7 +270,7 @@ export const Tasks: React.FC<TasksProps> = ({ currentUser, onNavigate }) => {
       </div>
 
       {/* Main Layout Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: currentUser.role === 'superadmin' ? '1fr 2fr' : '1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: currentUser.role === 'superadmin' ? '1fr 2fr' : '1fr', gap: '2rem' }} className="tasks-main-layout">
         
         {/* Left Side: Create Task Form (Superadmin Only) */}
         {currentUser.role === 'superadmin' && (
@@ -411,7 +413,7 @@ export const Tasks: React.FC<TasksProps> = ({ currentUser, onNavigate }) => {
             
             {/* Search Input Bar & Category Tabs */}
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-              <div style={{ position: 'relative', width: '280px' }}>
+              <div style={{ position: 'relative', width: '280px', flex: '1', minWidth: '200px' }}>
                 <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                 <input 
                   type="text" 

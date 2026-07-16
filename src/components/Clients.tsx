@@ -136,7 +136,9 @@ export const Clients: React.FC<ClientsProps> = ({ currentUser, onNavigate }) => 
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: '1px solid var(--border-color)',
-        paddingBottom: '1.5rem'
+        paddingBottom: '1.5rem',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
         <div>
           <h1 className="luxury-title" style={{ fontSize: '2.25rem', fontWeight: 600, color: 'var(--accent-black)' }}>
@@ -147,7 +149,7 @@ export const Clients: React.FC<ClientsProps> = ({ currentUser, onNavigate }) => 
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
           <button 
             onClick={handleSimulateLead} 
             className="btn-secondary" 
@@ -172,10 +174,11 @@ export const Clients: React.FC<ClientsProps> = ({ currentUser, onNavigate }) => 
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        gap: '1rem'
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
         {/* Search */}
-        <div style={{ position: 'relative', width: '320px' }}>
+        <div style={{ position: 'relative', width: '320px', flex: '1', minWidth: '200px' }}>
           <Search size={16} style={{
             position: 'absolute',
             left: '12px',

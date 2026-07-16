@@ -117,7 +117,9 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: '1px solid var(--border-color)',
-        paddingBottom: '1.5rem'
+        paddingBottom: '1.5rem',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
         <div>
           <h1 className="luxury-title" style={{ fontSize: '2.25rem', fontWeight: 600, color: 'var(--accent-black)' }}>
@@ -129,7 +131,7 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: currentUser.role === 'superadmin' ? '1fr 2fr' : '1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: currentUser.role === 'superadmin' ? '1fr 2fr' : '1fr', gap: '2rem' }} className="team-main-layout">
         
         {/* Left column: Add Team Member (Superadmin Only) */}
         {currentUser.role === 'superadmin' && (
@@ -313,7 +315,7 @@ export const Team: React.FC<TeamProps> = ({ currentUser, onNavigate }) => {
                       borderTop: '1px solid var(--border-color)',
                       paddingTop: '0.75rem',
                       textAlign: 'center'
-                    }}>
+                    }} className="team-metrics-grid">
                       <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem' }}>
                           <DollarSign size={10} /> Sales Closed

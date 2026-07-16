@@ -218,7 +218,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1.2fr', gap: '1.5rem', height: '550px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1.2fr', gap: '1.5rem', height: '550px' }} className="chat-layout">
         
         {/* Chat interface */}
         <div className="chat-container">
@@ -373,9 +373,9 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
         </div>
 
         {/* Sidebar Info - Channels and Active Members */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} className="chat-sidebar">
           
-          <div className="premium-card" style={{ padding: '1.25rem' }}>
+          <div className="premium-card" style={{ padding: '1rem' }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 600 }}>Active Workspace</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
               <div 
@@ -430,7 +430,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
           </div>
 
           {/* Direct Messages (DMs) */}
-          <div className="premium-card" style={{ padding: '1.25rem' }}>
+          <div className="premium-card" style={{ padding: '1rem' }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Users size={14} /> Direct Messages (DMs)
             </h3>
@@ -471,7 +471,7 @@ export const Chat: React.FC<ChatProps> = ({ currentUser }) => {
             </div>
           </div>
 
-          <div className="premium-card" style={{ padding: '1.25rem', flex: 1 }}>
+          <div className="premium-card" style={{ padding: '1rem', flex: 1 }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Sparkles size={14} style={{ color: 'var(--accent-orange)' }} /> Interactive AI Sandbox
             </h3>

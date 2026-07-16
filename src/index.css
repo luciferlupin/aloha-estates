@@ -86,6 +86,22 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(0, 0, 0, 0.25);
 }
 
+/* Chat layout mobile */
+@media (max-width: 768px) {
+  .chat-layout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+
+  .chat-sidebar {
+    display: none !important;
+  }
+
+  .chat-container {
+    height: calc(100vh - 200px) !important;
+  }
+}
+
 /* Premium Layout Components */
 .app-container {
   display: flex;
@@ -210,7 +226,7 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Make grids and lists wrap cleanly on small screens */
   .premium-card {
-    padding: 1.15rem;
+    padding: 1rem;
   }
 
   /* Force inline styled header rows to stack on mobile */
@@ -223,7 +239,7 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Scale page titles nicely to avoid word wrap clipping */
   .luxury-title {
-    font-size: 1.55rem !important;
+    font-size: 1.5rem !important;
   }
 
   /* Make action buttons fit nicely and wrap on mobile headers */
@@ -237,15 +253,15 @@ h1, h2, h3, h4, h5, h6 {
   .main-content > .fade-in > div[style*="justify-content: space-between"] > div[style*="display: flex"] > button,
   .main-content > .fade-in > div[style*="justify-content: space-between"] > div[style*="display:flex"] > button {
     flex: 1 !important;
-    min-width: 120px !important;
+    min-width: 100px !important;
     justify-content: center !important;
-    padding: 0.55rem 0.85rem !important;
-    font-size: 0.78rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
   }
 
   /* Fit standard primary and secondary buttons for small screens */
   .btn-primary, .btn-secondary {
-    padding: 0.55rem 1rem !important;
+    padding: 0.5rem 0.875rem !important;
     font-size: 0.8rem !important;
   }
 
@@ -254,7 +270,7 @@ h1, h2, h3, h4, h5, h6 {
   div[style*="position:fixed"] > div.premium-card {
     width: 92% !important;
     max-width: 92% !important;
-    padding: 1.25rem !important;
+    padding: 1rem !important;
     overflow-y: auto !important;
     max-height: 85vh !important;
   }
@@ -266,7 +282,7 @@ h1, h2, h3, h4, h5, h6 {
   div[style*="width:600px"] {
     width: 100vw !important;
     max-width: 100vw !important;
-    padding: 1.5rem 1.25rem !important;
+    padding: 1rem !important;
     z-index: 1002 !important;
   }
 
@@ -274,13 +290,13 @@ h1, h2, h3, h4, h5, h6 {
   div[style*="display: grid"], 
   div[style*="grid-template-columns"] {
     grid-template-columns: 1fr !important;
-    gap: 1.25rem !important;
+    gap: 1rem !important;
   }
 
   /* Specific grids inside components */
   .kanban-board {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .kanban-column {
@@ -288,12 +304,316 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .chat-container {
-    height: 450px !important;
+    height: calc(100vh - 120px) !important;
+  }
+
+  /* Form inputs mobile optimization */
+  .form-input {
+    padding: 0.6rem 0.875rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Table responsive */
+  .premium-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .premium-table {
+    min-width: 600px;
+  }
+
+  /* Badge mobile sizing */
+  .badge {
+    padding: 0.2rem 0.5rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Status dots mobile */
+  .status-dot {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  /* Card content spacing */
+  .premium-card > div {
+    gap: 0.75rem !important;
+  }
+
+  /* Icon sizing */
+  .btn-icon {
+    padding: 0.4rem !important;
+  }
+
+  /* Search inputs mobile */
+  input[style*="width: 320px"],
+  input[style*="width:320px"] {
+    width: 100% !important;
+  }
+
+  input[style*="width: 280px"],
+  input[style*="width:280px"] {
+    width: 100% !important;
+  }
+
+  /* Chart containers mobile */
+  div[style*="height: 180px"],
+  div[style*="height:180px"] {
+    height: 140px !important;
+  }
+
+  /* Sidebar mobile adjustments */
+  .sidebar-wrapper {
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  /* Sidebar navigation mobile */
+  .sidebar-wrapper nav {
+    padding: 1rem 0.5rem !important;
+  }
+
+  .sidebar-wrapper nav button {
+    padding: 0.6rem 0.875rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Sidebar profile mobile */
+  .sidebar-wrapper > div:nth-child(2) {
+    padding: 1rem !important;
+  }
+
+  /* Sidebar brand mobile */
+  .sidebar-wrapper > div:first-child {
+    padding: 1.25rem 1rem !important;
+  }
+
+  /* Notification banners mobile */
+  div[style*="position: fixed"][style*="top: 20px"] {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 90% !important;
+  }
+
+  /* Workflow items mobile */
+  .workflow-item {
+    padding: 0.6rem 0.875rem !important;
+  }
+
+  /* Message bubbles mobile */
+  .message-bubble {
+    max-width: 85% !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* Chat messages container */
+  .chat-messages {
+    padding: 1rem !important;
+  }
+
+  /* Chat input area mobile */
+  .chat-input-area {
+    padding: 0.875rem 1rem !important;
+  }
+
+  /* Kanban cards mobile */
+  .kanban-card {
+    padding: 0.75rem !important;
+  }
+
+  /* Form groups mobile */
+  .form-group {
+    gap: 0.4rem !important;
+  }
+
+  .form-group label {
+    font-size: 0.8rem !important;
+  }
+
+  /* Select dropdowns mobile */
+  select.form-input {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Grid system mobile */
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+  }
+
+  /* KPI cards mobile */
+  .grid-4 .premium-card {
+    padding: 0.875rem !important;
+  }
+
+  .grid-4 .premium-card span[style*="fontSize: 1.85rem"] {
+    font-size: 1.5rem !important;
+  }
+
+  /* Task cards mobile */
+  div[style*="borderLeft: 4px solid"] {
+    padding: 1rem !important;
+  }
+
+  /* Team member cards mobile */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Activity log mobile */
+  div[style*="maxHeight: 300px"] {
+    max-height: 200px !important;
+  }
+
+  /* Sticky elements mobile */
+  div[style*="position: sticky"] {
+    position: relative !important;
+  }
+
+  /* Flex containers mobile */
+  div[style*="display: flex"][style*="gap: 1.5rem"] {
+    gap: 0.75rem !important;
+  }
+
+  div[style*="display: flex"][style*="gap: 2rem"] {
+    gap: 1rem !important;
+  }
+
+  /* Button groups mobile */
+  div[style*="display: flex"] > button {
+    flex-shrink: 0;
+  }
+
+  /* Text truncation for long content */
+  .text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Safe area for notched phones */
+  .main-content {
+    padding-left: max(1rem, env(safe-area-inset-left)) !important;
+    padding-right: max(1rem, env(safe-area-inset-right)) !important;
+  }
+
+  .mobile-header {
+    padding-left: max(1rem, env(safe-area-inset-left)) !important;
+    padding-right: max(1rem, env(safe-area-inset-right)) !important;
   }
 }
 
 @media (max-width: 480px) {
-  /* Smaller screens custom grids override */
+  /* Extra small screens optimizations */
+  .main-content {
+    padding: 0.75rem !important;
+    gap: 1rem !important;
+  }
+
+  .premium-card {
+    padding: 0.875rem !important;
+  }
+
+  .luxury-title {
+    font-size: 1.35rem !important;
+  }
+
+  .btn-primary, .btn-secondary {
+    padding: 0.45rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .grid-2, .grid-3, .grid-4 {
+    gap: 0.75rem !important;
+  }
+
+  .chat-container {
+    height: calc(100vh - 100px) !important;
+  }
+
+  .message-bubble {
+    max-width: 90% !important;
+    padding: 0.625rem 0.875rem !important;
+  }
+
+  .kanban-card {
+    padding: 0.625rem !important;
+  }
+
+  .form-input {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Team metrics grid extra small */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"],
+  .team-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Main layout grids for components */
+  .dashboard-main-layout,
+  .tasks-main-layout,
+  .team-main-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Sidebar extra small */
+  .sidebar-wrapper {
+    width: 90vw;
+    max-width: 280px;
+  }
+
+  /* Notification extra small */
+  div[style*="position: fixed"][style*="top: 20px"] {
+    width: 95% !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* Badge extra small */
+  .badge {
+    padding: 0.15rem 0.4rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Status dot extra small */
+  .status-dot {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  /* Icon button extra small */
+  .btn-icon {
+    padding: 0.35rem !important;
+  }
+
+  /* Workflow checkbox extra small */
+  .workflow-checkbox {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Chat timestamp extra small */
+  .message-timestamp {
+    font-size: 0.6rem !important;
+  }
+
+  /* Safe area extra small */
+  .main-content {
+    padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
+    padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
+  }
+
+  .mobile-header {
+    padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
+    padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
+  }
 }
 
 /* Premium Card Design */

@@ -233,7 +233,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
         justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: '1px solid var(--border-color)',
-        paddingBottom: '1.5rem'
+        paddingBottom: '1.5rem',
+        gap: '1rem',
+        flexWrap: 'wrap'
       }}>
         <div>
           <h1 className="luxury-title" style={{ fontSize: '2.25rem', fontWeight: 600, color: 'var(--accent-black)' }}>
@@ -244,7 +246,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
           {currentUser.role === 'superadmin' && (
             <>
               <button onClick={() => onNavigate('analytics')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid var(--accent-black)', color: 'var(--accent-black)' }}>
@@ -267,7 +269,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid-4">
+      <div className="grid-4" style={{ gap: '1rem' }}>
         
         <div 
           className="premium-card interactive-card" 
@@ -350,7 +352,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
       </div>
 
       {/* Main Content Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: '1.5rem' }} className="dashboard-main-layout">
         
         {/* Left Side: Analytics & Daily Checklist */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -401,7 +403,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                 </div>
               </div>
               
-              <div style={{ position: 'relative', height: `${chartHeight}px`, marginTop: '1.25rem' }}>
+              <div style={{ position: 'relative', height: `${chartHeight}px`, marginTop: '1.25rem' }} className="chart-container">
                 {/* Floating Apple Interactive Popover Overlay */}
                 {hoveredPointIdx !== null && (
                   <div style={{
@@ -435,7 +437,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
                   </div>
                 )}
 
-                <svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                <svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="xMidYMid meet" style={{ overflow: 'visible', minWidth: '300px' }}>
                   <defs>
                     <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#000000" stopOpacity="0.1" />
@@ -844,7 +846,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.5rem' }} className="monitoring-grid">
             
             {/* Left Side: Pipeline Valuations & Source breakdown */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -919,8 +921,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, onNavigate })
               <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Agent Conversion Leaderboard</h3>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '-0.75rem' }}>Key conversion statistics and check-in times</p>
               
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left', minWidth: '600px' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
                       <th style={{ padding: '0.5rem 0.25rem' }}>Agent</th>
