@@ -208,6 +208,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
+      {/* Footer Branding */}
+      <div style={{
+        padding: "0.5rem 0.75rem",
+        textAlign: "center",
+        fontSize: "0.7rem",
+        color: "var(--text-muted, #94a3b8)"
+      }}>
+        Made by <a href="https://www.curiouskaizer.com/" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }} title="Curious Kaizer - Web Development Company in Delhi">Curious Kaizer</a>
+      </div>
+
       {/* Logout Footer */}
       <div style={{
         padding: '1rem 0.75rem',
